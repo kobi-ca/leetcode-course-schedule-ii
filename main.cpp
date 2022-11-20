@@ -4,31 +4,6 @@
 #include <algorithm>
 #include <iterator>
 
-
-//class Solution {
-//public:
-//    static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
-//        std::vector<std::vector<int>> graph(numCourses);
-//        for(const auto& v : std::as_const(prerequisites)) {
-//            const int to = v[1];
-//            const int from = v[0];
-//            graph[to].push_back(from);
-//        }
-//        const auto start = std::find_if(std::cbegin(graph),
-//                                        std::cend(graph),
-//                                        [](const auto& inner){ return inner.empty(); });
-//        std::vector<int> out;
-//        // no empty one - no start
-//        // empty means no one is pointing to you.
-//        if (start == std::cend(graph)) {
-//            return out;
-//        }
-//
-//        return out;
-//    }
-//};
-
-
 class Solution {
 public:
     static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
@@ -40,19 +15,13 @@ public:
             prereq_to_course[prereq].push_back(course);
             course_to_its_prereq[course].push_back(prereq);
         }
-//        const auto start = std::find_if(std::cbegin(prereq_to_course),
-//                                        std::cend(prereq_to_course),
-//                                        [](const auto& inner){ return inner.empty(); });
         std::vector<int> out;
-        // no empty one - no start
-        // empty means no one is pointing to you.
-//        if (start == std::cend(prereq_to_course)) {
-//            return out;
-//        }
-
         const auto start = std::find_if(std::cbegin(course_to_its_prereq),
                                         std::cend(course_to_its_prereq),
                                         [](const auto& v){ return v.empty(); });
+        if (start == std::cend(prereq_to_course)) {
+            return out;
+        }
         const int dist = std::distance(std::cbegin(course_to_its_prereq), start);
         std::vector<int> visited(numCourses);
         std::vector<int> fifo;
