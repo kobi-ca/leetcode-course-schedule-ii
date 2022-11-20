@@ -2,6 +2,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <iterator>
 
 
 //class Solution {
@@ -31,22 +32,48 @@
 class Solution {
 public:
     static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
-        std::vector<std::vector<int>> graph(numCourses);
+        std::vector<std::vector<int>> prereq_to_course(numCourses);
+        std::vector<std::vector<int>> course_to_its_prereq(numCourses);
         for(const auto& v : std::as_const(prerequisites)) {
-            const int to = v[1];
-            const int from = v[0];
-            graph[to].push_back(from);
+            const auto prereq = v[1];
+            const auto course  = v[0];
+            prereq_to_course[prereq].push_back(course);
+            course_to_its_prereq[course].push_back(prereq);
         }
-        const auto start = std::find_if(std::cbegin(graph),
-                                        std::cend(graph),
-                                        [](const auto& inner){ return inner.empty(); });
+//        const auto start = std::find_if(std::cbegin(prereq_to_course),
+//                                        std::cend(prereq_to_course),
+//                                        [](const auto& inner){ return inner.empty(); });
         std::vector<int> out;
         // no empty one - no start
         // empty means no one is pointing to you.
-        if (start == std::cend(graph)) {
-            return out;
+//        if (start == std::cend(prereq_to_course)) {
+//            return out;
+//        }
+
+        const auto start = std::find_if(std::cbegin(course_to_its_prereq),
+                                        std::cend(course_to_its_prereq),
+                                        [](const auto& v){ return v.empty(); });
+        const int dist = std::distance(std::cbegin(course_to_its_prereq), start);
+        std::vector<int> visited(numCourses);
+        std::vector<int> fifo;
+        fifo.push_back(dist);
+        while(!fifo.empty()) {
+            const auto b = fifo.front();
+            fifo.erase(std::begin(fifo));
+            if (visited[b]) {
+                continue;
+            }
+            out.push_back(b);
+            visited[b] = 1;
+            const auto toinsert = prereq_to_course[b];
+            fifo.insert(std::cend(fifo),
+                         toinsert.cbegin(),
+                         toinsert.cend());
         }
 
+        if (out.size() != numCourses) {
+            return {};
+        }
         return out;
     }
 };
@@ -54,5 +81,8 @@ public:
 int main() {
     std::vector<std::vector<int>> in{ {1, 0}, {2, 0}, {3, 1}, {3, 2} };
     const auto result = Solution::findOrder(4, in);
+    std::copy(std::cbegin(result),
+              std::cend(result),
+              std::ostream_iterator<int>(std::clog, ","));
     return 0;
 }
