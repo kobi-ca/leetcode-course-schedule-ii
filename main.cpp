@@ -48,10 +48,23 @@ public:
 };
 
 int main() {
-    std::vector<std::vector<int>> in{ {1, 0}, {2, 0}, {3, 1}, {3, 2} };
-    const auto result = Solution::findOrder(4, in);
-    std::copy(std::cbegin(result),
-              std::cend(result),
-              std::ostream_iterator<int>(std::clog, ","));
+    {
+        std::vector<std::vector<int>> in{{1, 0},
+                                         {2, 0},
+                                         {3, 1},
+                                         {3, 2}};
+        const auto result = Solution::findOrder(4, in);
+        std::copy(std::cbegin(result),
+                  std::cend(result),
+                  std::ostream_iterator<int>(std::clog, ","));
+    }
+    std::clog << '\n';
+    {
+        std::vector<std::vector<int>> in{{1, 0}};
+        const auto result = Solution::findOrder(2, in);
+        std::copy(std::cbegin(result),
+                  std::cend(result),
+                  std::ostream_iterator<int>(std::clog, ","));
+    }
     return 0;
 }
