@@ -3,13 +3,15 @@
 #include <utility>
 #include <algorithm>
 #include <iterator>
+#include <tuple>
 
 class Solution {
 public:
     static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
         if (prerequisites.empty()) {
             std::vector<int> out(numCourses);
-            std::generate(out.begin(), out.end(), [i = numCourses - 1] () mutable { return i--; });
+            std::generate(out.begin(), out.end(),
+                          [i = numCourses - 1] () mutable { return i--; });
             return out;
         }
         std::vector<std::vector<int>> prereq_to_course(numCourses);
@@ -27,10 +29,15 @@ public:
         if (start == std::cend(course_to_its_prereq)) {
             return out;
         }
-        const int dist = std::distance(std::cbegin(course_to_its_prereq), start);
         std::vector<int> visited(numCourses);
         std::vector<int> fifo;
-        fifo.push_back(dist);
+        int idx{};
+        for(const auto& v : std::as_const(course_to_its_prereq)) {
+            if (v.empty()) {
+                fifo.push_back(idx);
+            }
+            ++idx;
+        }
         while(!fifo.empty()) {
             const auto b = fifo.front();
             fifo.erase(std::begin(fifo));
