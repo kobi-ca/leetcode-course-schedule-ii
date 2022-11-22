@@ -3,18 +3,9 @@
 #include <utility>
 #include <algorithm>
 #include <iterator>
-#include <tuple>
-#include <cassert>
 
 class Solution {
 public:
-    static void swap_vals(std::vector<int> &out, int x, int y) {
-        auto iterx = std::find(out.begin(), out.end(), x);
-        auto itery = std::find(out.begin(), out.end(), y);
-        assert(iterx != out.end() && itery != out.end());
-        using std::iter_swap;
-        iter_swap(iterx, itery);
-    }
 
     static bool find_cycles(const int total,
                             const std::vector<std::vector<int>> &course_to_its_prereq,
@@ -43,17 +34,15 @@ public:
 
     static std::vector<int> sort(const std::vector<int> &input,
                                  const std::vector<std::vector<int>>& prereq_to_course) {
-        std::vector<int> out;
-        for(const int val : input) {
-            if (out.empty()) {
-                out.push_back(val);
-                continue;
-            }
-            for(auto iter = out.begin(); iter != out.end(); ++iter) {
-                const auto curr = *iter;
-                if (std::find(prereq_to_course[val].begin(),
-                              prereq_to_course[val].end(), curr) != prereq_to_course[val].end()) {
-                    iter = out.insert(iter, val);
+        std::vector<int> out(input.begin(), input.end());
+        for (auto iter = out.begin(); iter != out.end(); ++iter) {
+            const auto curr = *iter;
+            for (auto inner = std::next(iter); inner != out.end(); ++inner) {
+                const auto inner_val = *inner;
+                if (std::find(prereq_to_course[inner_val].begin(),
+                              prereq_to_course[inner_val].end(), curr) !=
+                              prereq_to_course[inner_val].end()) {
+                    std::iter_swap(iter, inner);
                 }
             }
         }
@@ -86,8 +75,9 @@ public:
             }
             ++idx;
         }
-        for(const auto start : std::as_const(queue)) {
-            if (find_cycles(numCourses, prereq_to_course, start)) {
+        //for(const auto start : std::as_const(queue)) {
+        for (int idx = 0; idx < numCourses; ++idx) {
+            if (find_cycles(numCourses, prereq_to_course, idx)) {
                 return {};
             }
         }
@@ -96,8 +86,8 @@ public:
             return out;
         }
         while(!queue.empty()) {
-            const auto b = queue.back();
-            queue.pop_back();
+            const auto b = queue.front();
+            queue.erase(queue.begin());
             if (visited[b]) {
                 continue;
             }
@@ -127,6 +117,7 @@ namespace {
 
 int main() {
     {
+        std::clog << "{1, 0}, {2, 0}, {3, 1}, {3, 2} : ";
         std::vector<std::vector<int>> in{{1, 0},
                                          {2, 0},
                                          {3, 1},
@@ -135,26 +126,31 @@ int main() {
         print(result);
     }
     {
+        std::clog << "{1, 0} : ";
         std::vector<std::vector<int>> in{{1, 0}};
         const auto result = Solution::findOrder(2, in);
         print(result);
     }
     {
+        std::clog << "[] : ";
         std::vector<std::vector<int>> in;
         const auto result = Solution::findOrder(2, in);
         print(result);
     }
     {
+        std::clog << "[] : ";
         std::vector<std::vector<int>> in;
         const auto result = Solution::findOrder(1, in);
         print(result);
     }
     {
+        std::clog << "{0,1}, {1,0} : ";
         std::vector<std::vector<int>> in{{0,1}, {1,0}};
         const auto result = Solution::findOrder(2, in);
         print(result);
     }
     {
+        std::clog << "{1,0} : ";
         std::vector<std::vector<int>> in{{1,0}};
         const auto result = Solution::findOrder(3, in);
         print(result);
@@ -166,11 +162,13 @@ int main() {
         print(result);
     }
     {
+        std::clog << "{1,0}, {2,0}, {3,1}, {3, 2} : ";
         std::vector<std::vector<int>> in{{1,0}, {2,0}, {3,1}, {3, 2}};
         const auto result = Solution::findOrder(4, in);
         print(result);
     }
     {
+        std::clog << "{1,0}, {1,2}, {0,1} : ";
         std::vector<std::vector<int>> in{{1,0}, {1,2}, {0,1}};
         const auto result = Solution::findOrder(3, in);
         print(result);
@@ -186,6 +184,13 @@ int main() {
         std::clog << "{5,8},{3,5},{1,9},{4,5},{0,2},{7,8},{4,9} : ";
         std::vector<std::vector<int>> in{{5,8},{3,5},{1,9},{4,5},{0,2},{7,8},{4,9}};
         const auto result = Solution::findOrder(10, in);
+        print(result);
+    }
+
+    {
+        std::clog << "{1,0},{2,6},{1,7},{5,1},{6,4},{7,0},{0,5} : ";
+        std::vector<std::vector<int>> in{{1,0},{2,6},{1,7},{5,1},{6,4},{7,0},{0,5}};
+        const auto result = Solution::findOrder(8, in);
         print(result);
     }
 
