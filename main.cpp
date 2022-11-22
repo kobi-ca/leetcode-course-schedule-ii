@@ -54,13 +54,6 @@ public:
             const auto prereq = v[1];
             const auto course  = v[0];
             prereq_to_course[prereq].push_back(course);
-            auto &course_to_its_prereq_ref = course_to_its_prereq[prereq];
-            // find cycles
-            if (std::find(course_to_its_prereq_ref.begin(),
-                          course_to_its_prereq_ref.end(),
-                          course) != std::end(course_to_its_prereq_ref)) {
-                return {};
-            }
             course_to_its_prereq[course].push_back(prereq);
         }
 
