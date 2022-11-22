@@ -4,9 +4,18 @@
 #include <algorithm>
 #include <iterator>
 #include <tuple>
+#include <cassert>
 
 class Solution {
 public:
+    static void swap_vals(std::vector<int> &out, int x, int y) {
+        auto iterx = std::find(out.begin(), out.end(), x);
+        auto itery = std::find(out.begin(), out.end(), y);
+        assert(iterx != out.end() && itery != out.end());
+        using std::iter_swap;
+        iter_swap(iterx, itery);
+    }
+
     static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
         if (prerequisites.empty()) {
             std::vector<int> out(numCourses);
@@ -20,48 +29,63 @@ public:
             const auto prereq = v[1];
             const auto course  = v[0];
             prereq_to_course[prereq].push_back(course);
+            auto &course_to_its_prereq_ref = course_to_its_prereq[prereq];
+            // find cycles
+            if (std::find(course_to_its_prereq_ref.begin(),
+                          course_to_its_prereq_ref.end(),
+                          course) != std::end(course_to_its_prereq_ref)) {
+                return {};
+            }
             course_to_its_prereq[course].push_back(prereq);
         }
         std::vector<int> out;
-        const auto start = std::find_if(std::cbegin(course_to_its_prereq),
-                                        std::cend(course_to_its_prereq),
-                                        [](const auto& v){ return v.empty(); });
-        if (start == std::cend(course_to_its_prereq)) {
-            return out;
-        }
         std::vector<int> visited(numCourses);
-        std::vector<int> fifo;
+        std::vector<int> queue;
         int idx{};
         for(const auto& v : std::as_const(course_to_its_prereq)) {
             if (v.empty()) {
-                fifo.push_back(idx);
+                queue.push_back(idx);
             }
             ++idx;
         }
-        while(!fifo.empty()) {
-            const auto b = fifo.front();
-            fifo.erase(std::begin(fifo));
+        // not a single one with a zero prereq?
+        if (queue.empty()) {
+            return out;
+        }
+        while(!queue.empty()) {
+            const auto b = queue.back();
+            queue.pop_back();
             if (visited[b]) {
                 continue;
             }
             out.push_back(b);
             visited[b] = 1;
             const auto toinsert = prereq_to_course[b];
-            fifo.insert(std::cend(fifo),
-                         toinsert.cbegin(),
-                         toinsert.cend());
-        }
-
-        if (out.size() != numCourses) {
-            for (auto iter = visited.rbegin(); iter != visited.rend(); ++iter) {
-                if (!*iter) {
-                    out.insert(std::begin(out), std::distance(iter, visited.rend()) - 1);
+            for(const auto val : std::as_const(toinsert)) {
+                if (visited[val]) {
+                    swap_vals(out, val, b);
+                } else if (std::end(queue) == std::find(queue.cbegin(), queue.cend(), val)) {
+                        queue.push_back(val);
                 }
             }
         }
+
         return out;
     }
 };
+
+namespace {
+    void print(const std::vector<int>& result) {
+        if (result.empty()) {
+            std::clog << "[]\n";
+            return;
+        }
+        std::copy(std::cbegin(result),
+                  std::cend(result),
+                  std::ostream_iterator<int>(std::clog, ","));
+        std::clog << '\n';
+    }
+}
 
 int main() {
     {
@@ -70,58 +94,48 @@ int main() {
                                          {3, 1},
                                          {3, 2}};
         const auto result = Solution::findOrder(4, in);
-        std::copy(std::cbegin(result),
-                  std::cend(result),
-                  std::ostream_iterator<int>(std::clog, ","));
+        print(result);
     }
-    std::clog << '\n';
     {
         std::vector<std::vector<int>> in{{1, 0}};
         const auto result = Solution::findOrder(2, in);
-        std::copy(std::cbegin(result),
-                  std::cend(result),
-                  std::ostream_iterator<int>(std::clog, ","));
+        print(result);
     }
-    std::clog << '\n';
     {
         std::vector<std::vector<int>> in;
         const auto result = Solution::findOrder(2, in);
-        std::copy(std::cbegin(result),
-                  std::cend(result),
-                  std::ostream_iterator<int>(std::clog, ","));
+        print(result);
     }
-    std::clog << '\n';
     {
         std::vector<std::vector<int>> in;
         const auto result = Solution::findOrder(1, in);
-        std::copy(std::cbegin(result),
-                  std::cend(result),
-                  std::ostream_iterator<int>(std::clog, ","));
+        print(result);
     }
-    std::clog << '\n';
     {
         std::vector<std::vector<int>> in{{0,1}, {1,0}};
         const auto result = Solution::findOrder(2, in);
-        std::copy(std::cbegin(result),
-                  std::cend(result),
-                  std::ostream_iterator<int>(std::clog, ","));
+        print(result);
     }
-    std::clog << '\n';
     {
         std::vector<std::vector<int>> in{{1,0}};
         const auto result = Solution::findOrder(3, in);
-        std::copy(std::cbegin(result),
-                  std::cend(result),
-                  std::ostream_iterator<int>(std::clog, ","));
+        print(result);
     }
-    std::clog << '\n';
     {
         std::vector<std::vector<int>> in{{0,1}, {0,2}, {1,2}};
         const auto result = Solution::findOrder(3, in);
-        std::copy(std::cbegin(result),
-                  std::cend(result),
-                  std::ostream_iterator<int>(std::clog, ","));
+        print(result);
     }
-    std::clog << "\ndone\n";
+    {
+        std::vector<std::vector<int>> in{{1,0}, {2,0}, {3,1}, {3, 2}};
+        const auto result = Solution::findOrder(4, in);
+        print(result);
+    }
+    {
+        std::vector<std::vector<int>> in{{1,0}, {1,2}, {0,1}};
+        const auto result = Solution::findOrder(3, in);
+        print(result);
+    }
+    std::clog << "done\n";
     return 0;
 }
