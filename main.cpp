@@ -16,28 +16,27 @@ public:
         iter_swap(iterx, itery);
     }
 
-    static bool find_cycles(const std::vector<std::vector<int>> &course_to_its_prereq,
+    static bool find_cycles(const int total,
+                            const std::vector<std::vector<int>> &course_to_its_prereq,
                             const int start) {
-        std::vector<int> fifo; fifo.push_back(start);
-        std::vector<int> visited(course_to_its_prereq.size());
-        // BFS
-        while(!fifo.empty()){
-            const auto val = fifo.front();
-            if (visited[val]){
+        std::vector<int> visited(total);
+        return find_cycles(visited, start, course_to_its_prereq);
+    }
+    static bool find_cycles(std::vector<int> visited,
+                            const int val,
+                            const std::vector<std::vector<int>> &course_to_its_prereq) {
+        visited[val] = 1;
+        const auto &childs = course_to_its_prereq[val];
+        if (childs.empty()) {
+            return false;
+        }
+        for (const auto v: childs) {
+            if (visited[v]) {
                 return true;
             }
-            visited[val] = 1;
-            const auto& toinsert = course_to_its_prereq[val];
-            for(const auto v : toinsert) {
-                if (visited[v]) {
-                    return true;
-                }
-                if (!visited[v] &&
-                    std::find(fifo.cbegin(), fifo.cend(), v) == std::end(fifo)) {
-                    fifo.push_back(v);
-                }
+            if (find_cycles(visited, v, course_to_its_prereq)) {
+                return true;
             }
-            fifo.erase(std::begin(fifo));
         }
         return false;
     }
@@ -76,7 +75,7 @@ public:
             ++idx;
         }
         for(const auto start : std::as_const(queue)) {
-            if (find_cycles(prereq_to_course, start)) {
+            if (find_cycles(numCourses, prereq_to_course, start)) {
                 return {};
             }
         }
@@ -175,6 +174,14 @@ int main() {
         const auto result = Solution::findOrder(4, in);
         print(result);
     }
+
+    {
+        std::clog << "{5,8},{3,5},{1,9},{4,5},{0,2},{7,8},{4,9} : ";
+        std::vector<std::vector<int>> in{{5,8},{3,5},{1,9},{4,5},{0,2},{7,8},{4,9}};
+        const auto result = Solution::findOrder(10, in);
+        print(result);
+    }
+
     std::clog << "done\n";
     return 0;
 }
