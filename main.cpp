@@ -95,7 +95,12 @@ public:
             visited[b] = 1;
             auto toinsert = prereq_to_course[b];
             toinsert = sort(toinsert, prereq_to_course);
-            queue.insert(std::end(queue), toinsert.begin(), toinsert.end());
+            for(const auto val : toinsert) {
+                if (std::find(queue.begin(), queue.end(),val) != std::end(queue)) {
+                    continue;
+                }
+                queue.insert(std::end(queue), val);
+            }
         }
 
         return out;
@@ -191,6 +196,13 @@ int main() {
         std::clog << "{1,0},{2,6},{1,7},{5,1},{6,4},{7,0},{0,5} : ";
         std::vector<std::vector<int>> in{{1,0},{2,6},{1,7},{5,1},{6,4},{7,0},{0,5}};
         const auto result = Solution::findOrder(8, in);
+        print(result);
+    }
+
+    {
+        std::clog << "{5,6},{0,2},{1,7},{5,9},{1,8},{3,4},{0,6},{0,7},{0,3},{8,9} : ";
+        std::vector<std::vector<int>> in{{5,6},{0,2},{1,7},{5,9},{1,8},{3,4},{0,6},{0,7},{0,3},{8,9}};
+        const auto result = Solution::findOrder(10, in);
         print(result);
     }
 
