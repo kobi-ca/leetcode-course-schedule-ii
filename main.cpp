@@ -41,6 +41,25 @@ public:
         return false;
     }
 
+    static std::vector<int> sort(const std::vector<int> &input,
+                                 const std::vector<std::vector<int>>& prereq_to_course) {
+        std::vector<int> out;
+        for(const int val : input) {
+            if (out.empty()) {
+                out.push_back(val);
+                continue;
+            }
+            for(auto iter = out.begin(); iter != out.end(); ++iter) {
+                const auto curr = *iter;
+                if (std::find(prereq_to_course[val].begin(),
+                              prereq_to_course[val].end(), curr) != prereq_to_course[val].end()) {
+                    iter = out.insert(iter, val);
+                }
+            }
+        }
+        return out;
+    }
+
     static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
         if (prerequisites.empty()) {
             std::vector<int> out(numCourses);
@@ -84,14 +103,9 @@ public:
             }
             out.push_back(b);
             visited[b] = 1;
-            const auto toinsert = prereq_to_course[b];
-            for(const auto val : std::as_const(toinsert)) {
-                if (visited[val]) {
-                    swap_vals(out, val, b);
-                } else if (std::end(queue) == std::find(queue.cbegin(), queue.cend(), val)) {
-                        queue.push_back(val);
-                }
-            }
+            auto toinsert = prereq_to_course[b];
+            toinsert = sort(toinsert, prereq_to_course);
+            queue.insert(std::end(queue), toinsert.begin(), toinsert.end());
         }
 
         return out;
