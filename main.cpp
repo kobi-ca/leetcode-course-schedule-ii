@@ -80,7 +80,7 @@ public:
         idx = 0;
         auto upper_iter = out.rbegin();
         for(const auto& v : std::as_const(prereq_to_course)) {
-            if (v.empty()) {
+            if (v.empty() && !visited[idx]) {
                 *upper_iter = idx;
                 visited[idx] = 1;
                 ++upper_iter;
