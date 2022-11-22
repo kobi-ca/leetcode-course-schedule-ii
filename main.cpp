@@ -65,13 +65,25 @@ public:
             course_to_its_prereq[course].push_back(prereq);
         }
 
-        std::vector<int> out;
+        std::vector<int> out(numCourses);
         std::vector<int> visited(numCourses);
-        std::vector<int> queue;
         int idx{};
+        auto lower_iter = out.begin();
         for(const auto& v : std::as_const(course_to_its_prereq)) {
             if (v.empty()) {
-                queue.push_back(idx);
+                *lower_iter = idx;
+                visited[idx] = 1;
+                ++lower_iter;
+            }
+            ++idx;
+        }
+        idx = 0;
+        auto upper_iter = out.rbegin();
+        for(const auto& v : std::as_const(prereq_to_course)) {
+            if (v.empty()) {
+                *upper_iter = idx;
+                visited[idx] = 1;
+                ++upper_iter;
             }
             ++idx;
         }
@@ -81,28 +93,34 @@ public:
                 return {};
             }
         }
-        // not a single one with a zero prereq?
-        if (queue.empty()) {
-            return out;
-        }
-        while(!queue.empty()) {
-            const auto b = queue.front();
-            queue.erase(queue.begin());
-            if (visited[b]) {
-                continue;
+        while(std::any_of(visited.begin(), visited.end(),
+                          [](const int i){ return i == 0;})) {
+            auto not_visited = std::find(visited.begin(), visited.end(), 0);
+            if (not_visited == visited.end()) {
+                return out;
             }
-            out.push_back(b);
-            visited[b] = 1;
-            auto toinsert = prereq_to_course[b];
-            toinsert = sort(toinsert, prereq_to_course);
-            for(const auto val : toinsert) {
-                if (std::find(queue.begin(), queue.end(),val) != std::end(queue)) {
+            std::vector<int> queue;
+            queue.push_back(std::distance(visited.begin(), not_visited));
+            while(!queue.empty()) {
+                const auto b = queue.front();
+                queue.erase(queue.begin());
+                if (visited[b]) {
                     continue;
                 }
-                queue.insert(std::end(queue), val);
+                *lower_iter = b;
+                ++lower_iter;
+                visited[b] = 1;
+                auto toinsert = prereq_to_course[b];
+                toinsert = sort(toinsert, prereq_to_course);
+                for(const auto val : toinsert) {
+                    if (std::find(queue.begin(), queue.end(),val) != std::end(queue) ||
+                        visited[val]) {
+                        continue;
+                    }
+                    queue.insert(std::end(queue), val);
+                }
             }
         }
-
         return out;
     }
 };
@@ -203,6 +221,13 @@ int main() {
         std::clog << "{5,6},{0,2},{1,7},{5,9},{1,8},{3,4},{0,6},{0,7},{0,3},{8,9} : ";
         std::vector<std::vector<int>> in{{5,6},{0,2},{1,7},{5,9},{1,8},{3,4},{0,6},{0,7},{0,3},{8,9}};
         const auto result = Solution::findOrder(10, in);
+        print(result);
+    }
+
+    {
+        std::clog << "{3,0}, {0,1} : ";
+        std::vector<std::vector<int>> in{{3,0}, {0,1}};
+        const auto result = Solution::findOrder(4, in);
         print(result);
     }
 
