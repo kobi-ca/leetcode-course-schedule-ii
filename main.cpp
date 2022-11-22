@@ -16,6 +16,32 @@ public:
         iter_swap(iterx, itery);
     }
 
+    static bool find_cycles(const std::vector<std::vector<int>> &course_to_its_prereq,
+                            const int start) {
+        std::vector<int> fifo; fifo.push_back(start);
+        std::vector<int> visited(course_to_its_prereq.size());
+        // BFS
+        while(!fifo.empty()){
+            const auto val = fifo.front();
+            if (visited[val]){
+                return true;
+            }
+            visited[val] = 1;
+            const auto& toinsert = course_to_its_prereq[val];
+            for(const auto v : toinsert) {
+                if (visited[v]) {
+                    return true;
+                }
+                if (!visited[v] &&
+                    std::find(fifo.cbegin(), fifo.cend(), v) == std::end(fifo)) {
+                    fifo.push_back(v);
+                }
+            }
+            fifo.erase(std::begin(fifo));
+        }
+        return false;
+    }
+
     static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
         if (prerequisites.empty()) {
             std::vector<int> out(numCourses);
@@ -38,6 +64,7 @@ public:
             }
             course_to_its_prereq[course].push_back(prereq);
         }
+
         std::vector<int> out;
         std::vector<int> visited(numCourses);
         std::vector<int> queue;
@@ -47,6 +74,11 @@ public:
                 queue.push_back(idx);
             }
             ++idx;
+        }
+        for(const auto start : std::as_const(queue)) {
+            if (find_cycles(prereq_to_course, start)) {
+                return {};
+            }
         }
         // not a single one with a zero prereq?
         if (queue.empty()) {
@@ -122,6 +154,7 @@ int main() {
         print(result);
     }
     {
+        std::clog << "{0,1}, {0,2}, {1,2} : ";
         std::vector<std::vector<int>> in{{0,1}, {0,2}, {1,2}};
         const auto result = Solution::findOrder(3, in);
         print(result);
@@ -134,6 +167,12 @@ int main() {
     {
         std::vector<std::vector<int>> in{{1,0}, {1,2}, {0,1}};
         const auto result = Solution::findOrder(3, in);
+        print(result);
+    }
+    {
+        std::clog << "{0,1}, {0,2}, {1,3}, {3,0} : ";
+        std::vector<std::vector<int>> in{{0,1}, {0,2}, {1,3}, {3,0}};
+        const auto result = Solution::findOrder(4, in);
         print(result);
     }
     std::clog << "done\n";
