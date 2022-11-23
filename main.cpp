@@ -3,7 +3,6 @@
 #include <utility>
 #include <algorithm>
 #include <iterator>
-#include <tuple>
 
 class Solution {
 public:
@@ -31,23 +30,6 @@ public:
             }
         }
         return false;
-    }
-
-    static std::vector<int> sort(const std::vector<int> &input,
-                                 const std::vector<std::vector<int>>& prereq_to_course) {
-        std::vector<int> out(input.begin(), input.end());
-        for (auto iter = out.begin(); iter != out.end(); ++iter) {
-            const auto curr = *iter;
-            for (auto inner = std::next(iter); inner != out.end(); ++inner) {
-                const auto inner_val = *inner;
-                if (std::find(prereq_to_course[inner_val].begin(),
-                              prereq_to_course[inner_val].end(), curr) !=
-                              prereq_to_course[inner_val].end()) {
-                    std::iter_swap(iter, inner);
-                }
-            }
-        }
-        return out;
     }
 
     static void build_output(const int val,
@@ -104,65 +86,6 @@ public:
         }
 
         return {out.rbegin(), out.rend()};
-//        auto lower_iter = out.begin();
-//        for(const auto& v : std::as_const(course_to_its_prereq)) {
-//            if (v.empty()) {
-//                *lower_iter = idx;
-//                visited[idx] = 1;
-//                ++lower_iter;
-//            }
-//            ++idx;
-//        }
-//        idx = 0;
-//        auto upper_iter = out.rbegin();
-//        std::vector<int> queue_candidates;
-//        for(const auto& v : std::as_const(prereq_to_course)) {
-//            if (v.empty() && !visited[idx]) {
-//                *upper_iter = idx;
-//                visited[idx] = 1;
-//                ++upper_iter;
-//                queue_candidates.push_back(idx);
-//            }
-//            ++idx;
-//        }
-//        //for(const auto start : std::as_const(queue)) {
-//        for (int idx = 0; idx < numCourses; ++idx) {
-//            if (find_cycles(numCourses, prereq_to_course, idx)) {
-//                return {};
-//            }
-//        }
-//        while(std::any_of(visited.begin(), visited.end(),
-//                          [](const int i){ return i == 0;})) {
-////            auto not_visited = std::find(visited.begin(), visited.end(), 0);
-////            if (not_visited == visited.end()) {
-////                return out;
-////            }
-//            auto toinsert = prereq_to_course[queue_candidates.back()];
-//            toinsert = sort(toinsert, prereq_to_course); // ?
-//            std::vector<int> queue(toinsert.begin(), toinsert.end());
-//            queue_candidates.pop_back();
-////            queue.push_back(std::distance(visited.begin(), not_visited));
-//            while(!queue.empty()) {
-//                const auto b = queue.front();
-//                queue.erase(queue.begin());
-//                if (visited[b]) {
-//                    continue;
-//                }
-//                *upper_iter = b;
-//                ++upper_iter;
-//                visited[b] = 1;
-////                auto toinsert = prereq_to_course[b];
-////                toinsert = sort(toinsert, prereq_to_course);
-////                for(const auto val : toinsert) {
-////                    if (std::find(queue.begin(), queue.end(),val) != std::end(queue) ||
-////                        visited[val]) {
-////                        continue;
-////                    }
-////                    queue.insert(std::end(queue), val);
-////                }
-//            }
-//        }
-//        return out;
     }
 };
 
