@@ -7,24 +7,34 @@
 class Solution {
 public:
 
-    static void build_output(const int val,
+    static bool build_output(const int val,
                              std::vector<int>& visited,
+                             std::vector<int> cycle_detection,
                              std::vector<int>& out,
                              const std::vector<std::vector<int>>& prererq_to_course) {
+        cycle_detection[val] = 1;
         if (prererq_to_course[val].empty()){
             out.push_back(val);
             visited[val] = 1;
-            return;
+            return true;
         }
         const auto& neighbours = prererq_to_course[val];
         for(const auto n : neighbours) {
+            if (cycle_detection[n]) {
+                return false;
+            }
             if(visited[n]) {
                 continue;
             }
-            build_output(n, visited, out, prererq_to_course);
+            const auto ret = build_output(n, visited, cycle_detection,
+                                          out, prererq_to_course);
+            if (!ret) {
+                return false;
+            }
         }
         out.push_back(val);
         visited[val] = 1;
+        return true;
     }
 
     static std::vector<int> findOrder(int numCourses, std::vector<std::vector<int>>& prerequisites) {
@@ -49,7 +59,12 @@ public:
         auto idx = 0;
         for(const auto& p : course_to_its_prereq) {
             if (p.empty()) {
-                build_output(idx, visited, out, prereq_to_course);
+                std::vector<int> cycle_detection(numCourses);
+                const auto ret = build_output(idx, visited, cycle_detection,
+                                              out, prereq_to_course);
+                if (!ret) {
+                    return {};
+                }
             }
             ++idx;
         }
