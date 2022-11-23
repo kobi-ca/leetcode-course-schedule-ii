@@ -10,11 +10,12 @@ public:
     static bool build_output(const int val,
                              std::vector<int16_t>& visited,
                              std::vector<int16_t> cycle_detection,
-                             std::vector<int16_t>& out,
+                             std::vector<int>::reverse_iterator& out,
                              const std::vector<std::vector<int16_t>>& prererq_to_course) {
         cycle_detection[val] = 1;
         if (prererq_to_course[val].empty()){
-            out.push_back(val);
+            *out = val;
+            ++out;
             visited[val] = 1;
             return true;
         }
@@ -32,7 +33,8 @@ public:
                 return false;
             }
         }
-        out.push_back(val);
+        *out = val;
+        ++out;
         visited[val] = 1;
         return true;
     }
@@ -53,7 +55,8 @@ public:
             course_to_its_prereq[course].push_back(prereq);
         }
 
-        std::vector<int16_t> out;
+        std::vector<int> out(numCourses);
+        auto iter = out.rbegin();
         std::vector<int16_t> visited(numCourses);
 
         auto idx = 0;
@@ -61,7 +64,7 @@ public:
             if (p.empty()) {
                 std::vector<int16_t> cycle_detection(numCourses);
                 const auto ret = build_output(idx, visited, cycle_detection,
-                                              out, prereq_to_course);
+                                              iter, prereq_to_course);
                 if (!ret) {
                     return {};
                 }
@@ -74,7 +77,7 @@ public:
             return {};
         }
 
-        return {out.rbegin(), out.rend()};
+        return out;
     }
 };
 
