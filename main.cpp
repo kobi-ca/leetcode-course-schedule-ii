@@ -7,31 +7,6 @@
 class Solution {
 public:
 
-    static bool find_cycles(const int total,
-                            const std::vector<std::vector<int>> &course_to_its_prereq,
-                            const int start) {
-        std::vector<int> visited(total);
-        return find_cycles(visited, start, course_to_its_prereq);
-    }
-    static bool find_cycles(std::vector<int> visited,
-                            const int val,
-                            const std::vector<std::vector<int>> &course_to_its_prereq) {
-        visited[val] = 1;
-        const auto &childs = course_to_its_prereq[val];
-        if (childs.empty()) {
-            return false;
-        }
-        for (const auto v: childs) {
-            if (visited[v]) {
-                return true;
-            }
-            if (find_cycles(visited, v, course_to_its_prereq)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     static void build_output(const int val,
                              std::vector<int>& visited,
                              std::vector<int>& out,
@@ -68,23 +43,20 @@ public:
             course_to_its_prereq[course].push_back(prereq);
         }
 
-        auto idx{0};
-        for(const auto& p : course_to_its_prereq) {
-            if (p.empty() && find_cycles(numCourses, prereq_to_course, idx)) {
-                return {};
-            }
-            ++idx;
-        }
-
         std::vector<int> out;
         std::vector<int> visited(numCourses);
 
-        idx = 0;
+        auto idx = 0;
         for(const auto& p : course_to_its_prereq) {
             if (p.empty()) {
                 build_output(idx, visited, out, prereq_to_course);
             }
             ++idx;
+        }
+
+        if (std::any_of(visited.cbegin(), visited.cend(), [](const auto v){
+            return v == 0;})) {
+            return {};
         }
 
         return {out.rbegin(), out.rend()};
