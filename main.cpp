@@ -8,10 +8,10 @@ class Solution {
 public:
 
     static bool build_output(const int val,
-                             std::vector<int>& visited,
-                             std::vector<int> cycle_detection,
-                             std::vector<int>& out,
-                             const std::vector<std::vector<int>>& prererq_to_course) {
+                             std::vector<int16_t>& visited,
+                             std::vector<int16_t> cycle_detection,
+                             std::vector<int16_t>& out,
+                             const std::vector<std::vector<int16_t>>& prererq_to_course) {
         cycle_detection[val] = 1;
         if (prererq_to_course[val].empty()){
             out.push_back(val);
@@ -44,8 +44,8 @@ public:
                           [i = numCourses - 1] () mutable { return i--; });
             return out;
         }
-        std::vector<std::vector<int>> prereq_to_course(numCourses);
-        std::vector<std::vector<int>> course_to_its_prereq(numCourses);
+        std::vector<std::vector<int16_t>> prereq_to_course(numCourses);
+        std::vector<std::vector<int16_t>> course_to_its_prereq(numCourses);
         for(const auto& v : std::as_const(prerequisites)) {
             const auto prereq = v[1];
             const auto course  = v[0];
@@ -53,13 +53,13 @@ public:
             course_to_its_prereq[course].push_back(prereq);
         }
 
-        std::vector<int> out;
-        std::vector<int> visited(numCourses);
+        std::vector<int16_t> out;
+        std::vector<int16_t> visited(numCourses);
 
         auto idx = 0;
         for(const auto& p : course_to_its_prereq) {
             if (p.empty()) {
-                std::vector<int> cycle_detection(numCourses);
+                std::vector<int16_t> cycle_detection(numCourses);
                 const auto ret = build_output(idx, visited, cycle_detection,
                                               out, prereq_to_course);
                 if (!ret) {
